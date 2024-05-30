@@ -1,0 +1,15 @@
+{
+
+  "green_colors": {
+    "c1": [169, 209, 142],
+    "c2": [120, 182, 78],
+    "c3": [84, 130, 53]
+  },
+  "shap_colors": {
+    "negative": [0, 139, 251],
+    "positive": [255, 0, 79]
+
+  },
+  "title_font_size": 18,
+  "labels_font_size": 13
+}
