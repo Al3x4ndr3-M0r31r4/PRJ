@@ -36,3 +36,28 @@ class DatasetAnalysis:
         ax.spines["right"].set_visible(False)
         ax.tick_params(axis="y", labelsize=label_fs)
         ax.tick_params(axis="x", labelsize=label_fs)
+
+
+    def feat_hist(self, X, n_rows, n_cols, feat_names=None, bins=None, figsize=(10, 10), color=None, title_font_size=None, label_font_size=None):
+        fig, ax = plt.subplots(n_rows, n_cols, figsize=figsize)
+        ax = ax.flatten()
+
+        feature_names = feat_names
+
+        n_bins = bins
+
+        if n_bins is None:
+            n_bins = "auto"
+
+        if feature_names is None:
+            feature_names = range(X.shape[1])
+
+
+        for i in range(X.shape[1]):
+            ax[i].hist(X[:, i], bins=n_bins, color=color)
+            ax[i].set_title(f"{feature_names[i]}", fontsize=title_font_size)
+            ax[i].tick_params(axis='both', which='major', labelsize=label_font_size)
+
+        for i in range(X.shape[1], len(ax)):
+            ax[i].axis("off")
+

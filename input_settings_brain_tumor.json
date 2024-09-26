@@ -1,0 +1,5 @@
+{
+  "models_dir": "./logs/braintumor_models",
+  "input_dir": "./logs/braintumor_models/input",
+  "output_dir": "./logs/braintumor_models/output"
+}

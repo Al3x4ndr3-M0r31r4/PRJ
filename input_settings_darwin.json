@@ -1,0 +1,5 @@
+{
+  "models_dir": "./logs/darwin_models",
+  "input_dir": "./logs/darwin_models/input",
+  "output_dir": "./logs/darwin_models/output"
+}

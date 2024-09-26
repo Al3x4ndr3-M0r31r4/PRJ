@@ -199,40 +199,50 @@ class PerformanceAnalysis:
 
         return pandas_dict
 
-    def acc_for_class(self, cm, labels=None, colors=None, title=None, title_size=None, label_size=None):
+    def acc_for_class(self, cm, figure=False, labels=None, colors=None, title=None, title_size=None, label_size=None):
         acc_percent = []
         for row_idx in range(len(cm)):
             acc_percent.append(cm[row_idx][row_idx] / np.sum(cm[row_idx]))
 
-        acc_percent = [round(x * 100, 1) for x in acc_percent]
-        bar_text_labels = [f"{x}%" for x in acc_percent]
+        acc_percent_round = [round(x * 100, 1) for x in acc_percent]
+        bar_text_labels = [f"{x}" for x in acc_percent_round]
 
-        title_plt = "Accuracy of Each Class"
-        if title is not None:
-            title_plt = title
+        if figure == True:
+            title_plt = "Accuracy of Each Class"
+            if title is not None:
+                title_plt = title
 
-        title_s = 18
-        if title_size is not None:
-            title_s = title_size
+            title_s = 18
+            if title_size is not None:
+                title_s = title_size
 
-        label_s = 13
-        if label_size is not None:
-            label_s = label_size
+            label_s = 13
+            if label_size is not None:
+                label_s = label_size
 
-        if labels is not None:
-            container = plt.bar(labels, acc_percent, color=colors)
-        else:
-            container = plt.bar(range(len(cm)), acc_percent, color=colors)
+            if labels is not None:
+                container = plt.bar(labels, acc_percent_round, color=colors)
+            else:
+                container = plt.bar(range(len(cm)), acc_percent_round, color=colors)
 
-        plt.bar_label(container, bar_text_labels, label_type="edge", fontsize=label_s)
+            plt.bar_label(container, bar_text_labels, label_type="edge", fontsize=label_s)
 
-        plt.title(title_plt, fontsize=title_s, pad=20)
+            plt.title(title_plt, fontsize=title_s, pad=20)
 
-        plt.xlabel("Class", fontsize=label_s)
-        plt.ylabel("Accuracy (%)", fontsize=label_s)
-        plt.xticks(fontsize=label_s)
-        plt.yticks(fontsize=label_s)
-        plt.gca().spines["top"].set_visible(False)
-        plt.gca().spines["right"].set_visible(False)
+            plt.xlabel("Class", fontsize=label_s)
+            plt.ylabel("Accuracy (%)", fontsize=label_s)
+            plt.xticks(fontsize=label_s)
+            plt.yticks(fontsize=label_s)
+            plt.gca().spines["top"].set_visible(False)
+            plt.gca().spines["right"].set_visible(False)
 
-        plt.tight_layout()
+            plt.tight_layout()
+
+
+        pd_accs = pd.DataFrame(acc_percent)
+        pd_accs.columns.names = ["Classes"]
+        pd_accs.loc[len(cm)] = np.mean(pd_accs.iloc[:, 0])
+        pd_accs = pd_accs.rename(index={len(cm): "Average"})
+
+
+        return pd_accs

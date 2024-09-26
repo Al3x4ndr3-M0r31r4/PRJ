@@ -2,3 +2,7 @@ envXAI/
 .vscode
 .idea
 .ipynb_checkpoints
+./datasets/brain_tumor_imgs
+./datasets/brain_tumor_imgsv2
+./datasets/brain_tumor/*.txt
+./datasets/brain_tumor/folders
