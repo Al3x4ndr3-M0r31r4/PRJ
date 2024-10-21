@@ -1,0 +1,8 @@
+Metrics & LR & RF & SVM & EBM \\ 
+accuracy & 1.0 & 1.0 & 0.96 & 1.0 \\ 
+false-positive rate & 0.0 & 0.0 & 0.02 & 0.0 \\ 
+false-negative rate & 0.0 & 0.0 & 0.06 & 0.0 \\ 
+precision & 1.0 & 1.0 & 0.98 & 1.0 \\ 
+recall & 1.0 & 1.0 & 0.94 & 1.0 \\ 
+f-score & 1.0 & 1.0 & 0.96 & 1.0 \\ 
+

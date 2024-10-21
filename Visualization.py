@@ -1,9 +1,6 @@
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 import numpy as np
-import tensorflow as tf
-import tensorflow.keras as keras
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import ConfusionMatrixDisplay
 import shap
 from lime import lime_image
 from skimage.segmentation import mark_boundaries
@@ -16,63 +13,6 @@ class Visualization:
         self.perf_analysis = PerformanceAnalysis()
         self.gradcam = GradCAM()
 
-    def make_gradcam_heatmap(self, img_array, model, last_conv_layer_name, pred_index=None):
-        # First, we create a model that maps the input image to the activations
-        # of the last conv layer as well as the output predictions
-        grad_model = keras.models.Model(
-            model.inputs, [model.get_layer(last_conv_layer_name).output, model.output]
-        )
-
-        # Then, we compute the gradient of the top predicted class for our input image
-        # with respect to the activations of the last conv layer
-        with tf.GradientTape() as tape:
-            last_conv_layer_output, preds = grad_model(img_array)
-            if pred_index is None:
-                pred_index = tf.argmax(preds[0])
-            class_channel = preds[:, pred_index]
-
-            print(f"Pred Index: {pred_index}")
-
-        # This is the gradient of the output neuron (top predicted or chosen)
-        # with regard to the output feature map of the last conv layer
-        grads = tape.gradient(class_channel, last_conv_layer_output)
-
-        # This is a vector where each entry is the mean intensity of the gradient
-        # over a specific feature map channel
-        pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
-
-        # We multiply each channel in the feature map array
-        # by "how important this channel is" with regard to the top predicted class
-        # then sum all the channels to obtain the heatmap class activation
-        last_conv_layer_output = last_conv_layer_output[0]
-        heatmap = last_conv_layer_output @ pooled_grads[..., tf.newaxis]
-        heatmap = tf.squeeze(heatmap)
-
-        # For visualization purpose, we will also normalize the heatmap between 0 & 1
-        heatmap = tf.maximum(heatmap, 0) / tf.math.reduce_max(heatmap)
-        return heatmap.numpy()
-
-    def get_gradcam(self, img_array, heatmap, alpha=0.4):
-        # Rescale heatmap to a range 0-255
-        heatmap = np.uint8(255 * heatmap)
-
-        # Use jet colormap to colorize heatmap
-        jet = mpl.colormaps["jet"]
-
-        # Use RGB values of the colormap
-        jet_colors = jet(np.arange(256))[:, :3]
-        jet_heatmap = jet_colors[heatmap]
-
-        # Create an image with RGB colorized heatmap
-        jet_heatmap = keras.utils.array_to_img(jet_heatmap)
-        jet_heatmap = jet_heatmap.resize((img_array.shape[1], img_array.shape[0]))
-        jet_heatmap = keras.utils.img_to_array(jet_heatmap)
-
-        # Superimpose the heatmap on original image
-        superimposed_img = jet_heatmap * alpha + img_array
-        superimposed_img = keras.utils.array_to_img(superimposed_img)
-
-        return superimposed_img
 
     def confusion_matrices_pred(self, Y_test, Ye_test, nrows, ncols, figsize, title_size = None, label_size = None, titles = None, save_name=None):
 
@@ -120,15 +60,7 @@ class Visualization:
             plt.tight_layout()
             plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0.1, hspace=0.35)
 
-    def confusion_matrices(self, cms, nrows, ncols, figsize, title_size=None, label_size=None, titles=None, save_name=None):
-
-        t_size = 18
-        if title_size is not None:
-            t_size = title_size
-
-        l_size = 13
-        if label_size is not None:
-            l_size = label_size
+    def confusion_matrices(self, cms, nrows, ncols, figsize, title_size=18, label_size=13, titles=None, save_name=None):
 
         if save_name is not None:
             for i in range(len(cms)):
@@ -137,12 +69,12 @@ class Visualization:
 
                 cm_disp = ConfusionMatrixDisplay(confusion_matrix=cms[i])
 
-                plt.gca().tick_params(axis="both", labelsize=l_size)
-                plt.gca().set_xlabel("Predicted labels", fontsize=l_size)
-                plt.gca().set_ylabel("True labels", fontsize=l_size)
+                plt.gca().tick_params(axis="both", labelsize=label_size)
+                plt.gca().set_xlabel("Predicted labels", fontsize=label_size)
+                plt.gca().set_ylabel("True labels", fontsize=label_size)
 
                 if titles is not None:
-                    plt.gca().set_title(titles[i], fontsize=t_size)
+                    plt.gca().set_title(titles[i], fontsize=title_size)
 
                 plt.tight_layout()
 
@@ -157,11 +89,11 @@ class Visualization:
 
             for i in range(len(cms)):
                 if titles is not None:
-                    axes[i].set_title(titles[i], fontsize=t_size)
+                    axes[i].set_title(titles[i], fontsize=title_size)
 
-                axes[i].tick_params(axis="both", labelsize=l_size)
-                axes[i].set_xlabel("Predicted labels", fontsize=l_size)
-                axes[i].set_ylabel("True labels", fontsize=l_size)
+                axes[i].tick_params(axis="both", labelsize=label_size)
+                axes[i].set_xlabel("Predicted labels", fontsize=label_size)
+                axes[i].set_ylabel("True labels", fontsize=label_size)
 
                 disp = ConfusionMatrixDisplay(cms[i])
                 disp.plot(ax=axes[i])
@@ -170,7 +102,7 @@ class Visualization:
             plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0.1, hspace=0.35)
 
 
-    def local_shap(self, explanations, ebm_data, nrows, ncols, figsize, title_size, label_size, titles, ebm_colors,
+    def local_shap(self, explanations, ebm_data, nrows=2, ncols=2, figsize=(15,10), title_size=18, label_size=13, titles=None, ebm_colors=None,
                    num_features=None, save_name=None):
 
         for i in range(len(explanations)):
@@ -197,6 +129,7 @@ class Visualization:
 
 
         if ebm_data is not None:
+
             # Consider just the features importances without the interaction between them
             keep_indexes = [i for i in range(len(ebm_data["names"])) if "&" not in ebm_data["names"][i]]
             ebm_features_importances = np.array(ebm_data["scores"])[keep_indexes]
@@ -218,6 +151,9 @@ class Visualization:
 
             ebm_names_sorted = ebm_names_sorted[::-1]
             ebm_importances_sorted = ebm_importances_sorted[::-1]
+
+            if ebm_colors is None:
+                ebm_colors=[(0, 139, 251),(255, 0, 79)]
 
             colors = [ebm_colors[0] if x < 0 else ebm_colors[1] for x in
                       ebm_importances_sorted]
@@ -291,6 +227,9 @@ class Visualization:
         ebm_names_sorted = ebm_names_sorted[::-1]
         ebm_importances_sorted = ebm_importances_sorted[::-1]
 
+        if ebm_colors is None:
+            ebm_colors = [(0, 139, 251), (255, 0, 79)]
+
         if save_name is not None:
             plt.figure(figsize=figsize)
             plt.title("Explainable Boosting Machine", fontsize=title_size)
@@ -314,28 +253,20 @@ class Visualization:
             plt.gcf().savefig(f"{save_name}_{len(shap_values)}.png", bbox_inches="tight")
 
 
-    def acc_classes(self, cms, nrows, ncols, figsize, titles=None, labels=None, title_size=None, label_size=None,
+    def acc_classes(self, cms, nrows, ncols, figsize, titles=None, labels=None, title_size=18, label_size=13,
                     colors=None):
 
         plt.figure(figsize=figsize)
-
-        t_size = 18
-        if title_size is not None:
-            t_size = title_size
-
-        l_size = 13
-        if label_size is not None:
-            l_size = label_size
 
         for i in range(len(cms)):
             ax = plt.subplot(nrows, ncols, i + 1)
 
             if titles is not None:
-                ax.set_title(titles[i], fontsize=t_size)
+                ax.set_title(titles[i], fontsize=title_size)
 
-            ax.tick_params(axis="both", labelsize=l_size)
-            ax.set_xlabel("Accuracy (%)", fontsize=l_size)
-            ax.set_ylabel("Classes", fontsize=l_size)
+            ax.tick_params(axis="both", labelsize=label_size)
+            ax.set_xlabel("Accuracy (%)", fontsize=label_size)
+            ax.set_ylabel("Classes", fontsize=label_size)
 
             labels_plt = labels
             if labels is None:
@@ -381,9 +312,6 @@ class Visualization:
             plt.title("Original", fontsize=t_size)
             plt.axis("off")
 
-            # heatmap = self.make_gradcam_heatmap(np.expand_dims(images_to_explain[i], axis=0), model, last_conv_layer_name)
-            # grad_cam = self.get_gradcam(images_to_explain[i], heatmap, alpha=0.4)
-
             grad_cam = self.gradcam.get_gradcam_img(images_to_explain[i], model, last_conv_layer_name, alpha=0.4)
 
             explainer = lime_image.LimeImageExplainer(random_state=42)
@@ -401,8 +329,6 @@ class Visualization:
             plt.title("LIME", fontsize=t_size)
             plt.axis("off")
 
-            # img_mask = mark_boundaries(temp, mask)
-            # print(np.unique(img_mask))
             plt.subplot(1, n_cols, 3)
             plt.imshow(grad_cam)
             plt.title("Grad-CAM", fontsize=t_size)
@@ -419,13 +345,12 @@ class Visualization:
             # define a masker that is used to mask out partitions of the input image, this one uses a blurred background
             masker = shap.maskers.Image("inpaint_telea", images_to_explain[i].shape)
 
-            # By default the Partition explainer is used for all  partition explainer
             explainer = shap.Explainer(model, masker, output_names=["SHAP", "SHAP", "SHAP"])
 
-            # here we use 500 evaluations of the underlying model to estimate the SHAP values
             shap_values = explainer(np.array([images_to_explain[i]]), max_evals=s_evals, batch_size=30,
                                     outputs=shap.Explanation.argsort.flip[:1])
 
+            # Shap shows two images, so figsize is adjusted
             shap.image_plot(shap_values, show=False, width=int(f_size[0] / 3 * 2))
             plt.savefig(f"{save_name}_shap_{i}.png", bbox_inches="tight")
 

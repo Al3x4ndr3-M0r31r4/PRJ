@@ -62,7 +62,7 @@ class GradCAM:
         jet_heatmap = jet_heatmap.resize((img_array.shape[1], img_array.shape[0]))
         jet_heatmap = keras.utils.img_to_array(jet_heatmap)
 
-        # Superimpose the heatmap on original image
+        # Overlap the heatmap with original image
         superimposed_img = jet_heatmap * alpha + img_array
         superimposed_img = keras.utils.array_to_img(superimposed_img)
 

@@ -238,11 +238,13 @@ class PerformanceAnalysis:
 
             plt.tight_layout()
 
-
+        acc = np.sum(np.diag(cm)) / np.sum(cm.flatten())
         pd_accs = pd.DataFrame(acc_percent)
         pd_accs.columns.names = ["Classes"]
         pd_accs.loc[len(cm)] = np.mean(pd_accs.iloc[:, 0])
         pd_accs = pd_accs.rename(index={len(cm): "Average"})
+        pd_accs.loc[len(cm)] = acc
+        pd_accs = pd_accs.rename(index={len(cm): "Accuracy"})
 
 
         return pd_accs

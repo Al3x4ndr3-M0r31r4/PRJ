@@ -14,6 +14,10 @@ class SyntheticDataset:
         :param random_coef: Array with the randomness coefficient of each column with domain [0, 1]
         :param class_percent: Array with probabilities of the classes in the domain ]0, 1]. If None, all classes will have same probabilities
         :param seed: seed for the random generator
+        :param std_dev_perc: the standard deviation for each feature when using norm_dist=True. All gaussian curves of the same feature have the
+        same standard deviation
+        :param class_sep_perc: The percentage of separation for each feature. The greater the separation the easier should be the classification and
+        the curves of the feature will be more apart if the hystogram is analysed
         """
 
         self.min_val = min_val

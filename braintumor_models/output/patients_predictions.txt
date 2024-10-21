@@ -1,0 +1,5 @@
+PID & Raw CNN & VGG & MBNet & RESNet \\ 
+IDPatient0(f28) & 0 & 0 & 0 & 0 \\ 
+IDPatient1(f1988) & 1 & 1 & 1 & 1 \\ 
+IDPatient2(f940) & 2 & 2 & 2 & 2 \\ 
+
