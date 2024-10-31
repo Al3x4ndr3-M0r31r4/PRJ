@@ -137,4 +137,10 @@ making displaying them in agrid and/or saving them in disk.
 
 
 
+# Acknowledgments
+
+This research was supported by Instituto Politécnico de Lisboa (IPL) under Grant IPL/IDI&CA2024/ML4EP_ISEL.
+
+
+
 
