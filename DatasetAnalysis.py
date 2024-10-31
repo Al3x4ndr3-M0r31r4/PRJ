@@ -4,19 +4,11 @@ import numpy as np
 
 class DatasetAnalysis:
 
-    def class_dist(self, y, title=None, labels=None, colors=None, title_font_size=None, label_font_size=None):
+    def class_dist(self, y, title=None, labels=None, colors=None, title_font_size=18, label_font_size=10):
         classes = np.unique(y, return_counts=True)
 
-        title_fs = 18
-        if title_font_size is not None:
-            title_fs = title_font_size
-
         if title is not None:
-            plt.title(title, fontsize=title_fs, pad=20)
-
-        label_fs = 10
-        if label_font_size is not None:
-            label_fs = label_font_size
+            plt.title(title, fontsize=title_font_size, pad=20)
 
         labels_plt = classes[0]
         if labels is not None:
@@ -27,15 +19,14 @@ class DatasetAnalysis:
         else:
             plt.bar(labels_plt, classes[1])
 
-
         classes_perc = [f"{x} ({round(100 * x / len(y), 1)}%)" for x in classes[1]]
 
         ax = plt.gca()
-        ax.bar_label(ax.containers[0], labels=classes_perc, label_type='edge', fontsize=label_fs)
+        ax.bar_label(ax.containers[0], labels=classes_perc, label_type='edge', fontsize=label_font_size)
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
-        ax.tick_params(axis="y", labelsize=label_fs)
-        ax.tick_params(axis="x", labelsize=label_fs)
+        ax.tick_params(axis="y", labelsize=label_font_size)
+        ax.tick_params(axis="x", labelsize=label_font_size)
 
 
     def feat_hist(self, X, n_rows, n_cols, feat_names=None, bins=None, figsize=(10, 10), color=None, title_font_size=None, label_font_size=None):

@@ -14,15 +14,7 @@ class Visualization:
         self.gradcam = GradCAM()
 
 
-    def confusion_matrices_pred(self, Y_test, Ye_test, nrows, ncols, figsize, title_size = None, label_size = None, titles = None, save_name=None):
-
-        t_size = 18
-        if title_size is not None:
-            t_size = title_size
-
-        l_size = 13
-        if label_size is not None:
-            l_size = label_size
+    def confusion_matrices_pred(self, Y_test, Ye_test, nrows, ncols, figsize, title_size = 18, label_size = 13, titles = None, save_name=None):
 
         if save_name is not None:
             for i in range(len(Ye_test)):
@@ -31,12 +23,12 @@ class Visualization:
 
                 ConfusionMatrixDisplay.from_predictions(Y_test[i], Ye_test[i], ax=plt.gca())
 
-                plt.gca().tick_params(axis="both", labelsize=l_size)
-                plt.gca().set_xlabel("Predicted labels", fontsize=l_size)
-                plt.gca().set_ylabel("True labels", fontsize=l_size)
+                plt.gca().tick_params(axis="both", labelsize=label_size)
+                plt.gca().set_xlabel("Predicted labels", fontsize=label_size)
+                plt.gca().set_ylabel("True labels", fontsize=label_size)
 
                 if titles is not None:
-                    plt.gca().set_title(titles[i], fontsize=t_size)
+                    plt.gca().set_title(titles[i], fontsize=title_size)
 
                 plt.tight_layout()
 
@@ -49,11 +41,11 @@ class Visualization:
 
             for i in range(len(Ye_test)):
                 if titles is not None:
-                    axes[i].set_title(titles[i], fontsize=t_size)
+                    axes[i].set_title(titles[i], fontsize=title_size)
 
-                axes[i].tick_params(axis="both", labelsize=l_size)
-                axes[i].set_xlabel("Predicted labels", fontsize=l_size)
-                axes[i].set_ylabel("True labels", fontsize=l_size)
+                axes[i].tick_params(axis="both", labelsize=label_size)
+                axes[i].set_xlabel("Predicted labels", fontsize=label_size)
+                axes[i].set_ylabel("True labels", fontsize=label_size)
 
                 ConfusionMatrixDisplay.from_predictions(Y_test[i], Ye_test[i], ax=axes[i])
 
@@ -283,33 +275,17 @@ class Visualization:
         plt.tight_layout()
         plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0.2, hspace=0.35)
 
-    def brain_tumor(self, images_to_explain, true_masks, model, last_conv_layer_name, save_name, lime_samples=None,
-                    shap_evals=None, figsize=None, title_size=None):
-
-        t_size = 12
-        if title_size is not None:
-            t_size = title_size
-
-        f_size = (15, 10)
-        if figsize is not None:
-            f_size = figsize
-
-        l_samples = 1000
-        if lime_samples is not None:
-            l_samples = lime_samples
-
-        s_evals = 250
-        if shap_evals is not None:
-            s_evals = shap_evals
+    def brain_tumor(self, images_to_explain, true_masks, model, last_conv_layer_name, save_name, lime_samples=1000,
+                    shap_evals=250, figsize=(15, 10), title_size=12):
 
         for i in range(len(images_to_explain)):
-            plt.figure(figsize=f_size)
+            plt.figure(figsize=figsize)
             n_cols = 4
             if true_masks is None:
                 n_cols = 5
             plt.subplot(1, n_cols, 1)
             plt.imshow(images_to_explain[i])
-            plt.title("Original", fontsize=t_size)
+            plt.title("Original", fontsize=title_size)
             plt.axis("off")
 
             grad_cam = self.gradcam.get_gradcam_img(images_to_explain[i], model, last_conv_layer_name, alpha=0.4)
@@ -317,7 +293,7 @@ class Visualization:
             explainer = lime_image.LimeImageExplainer(random_state=42)
             explanation = explainer.explain_instance(images_to_explain[i],
                                                      model.predict,
-                                                     top_labels=3, hide_color=0, num_samples=l_samples,
+                                                     top_labels=3, hide_color=0, num_samples=lime_samples,
                                                      random_seed=None)
 
             temp, mask = explanation.get_image_and_mask(explanation.top_labels[0], positive_only=True, hide_rest=True)
@@ -326,32 +302,32 @@ class Visualization:
             lime_mask = cv2.normalize(lime_mask, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
             plt.subplot(1, n_cols, 2)
             plt.imshow(lime_mask)
-            plt.title("LIME", fontsize=t_size)
+            plt.title("LIME", fontsize=title_size)
             plt.axis("off")
 
             plt.subplot(1, n_cols, 3)
             plt.imshow(grad_cam)
-            plt.title("Grad-CAM", fontsize=t_size)
+            plt.title("Grad-CAM", fontsize=title_size)
             plt.axis("off")
 
             if true_masks is not None:
                 plt.subplot(1, n_cols, 4)
                 plt.imshow(true_masks[i])
-                plt.title("True Mask", fontsize=t_size)
+                plt.title("True Mask", fontsize=title_size)
                 plt.axis("off")
 
             plt.savefig(f"{save_name}_exp_{i}.png", bbox_inches="tight")
 
-            # define a masker that is used to mask out partitions of the input image, this one uses a blurred background
+            # Define a masker that is used to mask out partitions of the input image, this one uses a blurred background
             masker = shap.maskers.Image("inpaint_telea", images_to_explain[i].shape)
 
             explainer = shap.Explainer(model, masker, output_names=["SHAP", "SHAP", "SHAP"])
 
-            shap_values = explainer(np.array([images_to_explain[i]]), max_evals=s_evals, batch_size=30,
+            shap_values = explainer(np.array([images_to_explain[i]]), max_evals=shap_evals, batch_size=30,
                                     outputs=shap.Explanation.argsort.flip[:1])
 
             # Shap shows two images, so figsize is adjusted
-            shap.image_plot(shap_values, show=False, width=int(f_size[0] / 3 * 2))
+            shap.image_plot(shap_values, show=False, width=int(figsize[0] / 3 * 2))
             plt.savefig(f"{save_name}_shap_{i}.png", bbox_inches="tight")
 
 
