@@ -6,12 +6,15 @@ The first task to complete is to install Anaconda: https://docs.anaconda.com/ana
 
 ## Create Environment
 
-The next step is run the two scripts on the Anaconda prompt. First setupXAI1, and after its completion, run setupXAI2.
+The next step is run the two scripts in the Anaconda prompt. Firstly, you need to read and change the setupXAI1 file. This file creates 
+the anaconda environment in a specified location with the libraries present in the envXAI.yml file. It is important to follow the comments 
+that are present in this file. Secondly, you need to run the setupXAI2, which reinstalls the correct version of SHAP.
 
 
 # Project Structure
 
 The management of the project was made using PyCharm.
+
 The main packages are the following:
 	- configs
 	- datasets
@@ -26,7 +29,7 @@ actually part of the original dataset (rows). Also there is a output directory w
 explanations for it, are stored.
 
 
-On the "configs" package, there are 4 files:
+In the "configs" package, there are 4 files:
 	- configs.json
 	- input_settings_brain_tumor.json
 	- input_settings_darwin.json
@@ -98,6 +101,9 @@ Brain Tumor dataset, explanations are also extracted in this phase.
 
 The "Diagnosis" files first load the data of the patients to diagnose, then all the models are loaded. In the next step, the models are used
 to make predictions along with its explanations. Finally all the outputs are saved in the specified output file.
+
+Note: To use the "Diagnosis" files you will have to unzip the "resnet.7z" file in the package "braintumor_models" and the "DARWIN_SVM_SHAP.7z" 
+in the "darwin_models" package. This files had to be compressed due to file size limits impositions.
 
 
 ## Utility Files
